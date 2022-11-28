@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fsp from 'fs/promises'
 
 function parseCSV(csv) {
     let lines = csv.split("\r\n");
@@ -8,30 +8,22 @@ function parseCSV(csv) {
     return lines
 }
 
-function createsFilesAfterRead(array) {
-    console.log(array);
+async function createsFilesAfterRead(array) {
     for (let i = 0; i < array.length; i++) {
         const theFileName = array[i][0];
         const content = array[i][1];
-        fs.writeFile(`${theFileName}`, `${content}`, function (err) {
-            if (err) {
-                return console.log(err);
-            }
-            console.log("The file was saved!");
-        });
+        fsp.writeFile(`${theFileName}`, `${content}`)
     }
 }
 
-function createFileFromCsv(fileName) {
-    fs.readFile(`${fileName}`, 'utf-8', function callback(error, content) {
-        if (error) {
-            console.log(error);
-            console.log(fileName);
-        } else {
-            const arrayOfItems = parseCSV(content)
-            createsFilesAfterRead(arrayOfItems)
-        }
-    })
+async function createFileFromCsv(fileName) {
+    try {
+        const content = await fsp.readFile(`${fileName}`, 'utf-8')
+        const arrayOfItems = parseCSV(content)
+         await createsFilesAfterRead(arrayOfItems)
+    }
+    catch(error) {
+        console.log(error.message)
+    }
 }
-
-createFileFromCsv("data.csv")
+await createFileFromCsv("data.csv")
